@@ -14,6 +14,7 @@ type NavItem = { href: string; label: string; icon: string };
 
 const NAV: NavItem[] = [
   { href: "/(app)/dashboard", label: "Home", icon: "⌂" },
+  { href: "/(app)/lists", label: "My Lists", icon: "☰" },
   { href: "/(auth)/login", label: "Auth", icon: "⎋" },
 ];
 

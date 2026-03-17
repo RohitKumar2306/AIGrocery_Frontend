@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 
 import { DashboardShell } from "../../src/layouts/DashboardShell";
 import { Card } from "../../src/components/ui/Card";
@@ -12,12 +13,15 @@ import { SearchBar } from "../../src/components/ui/SearchBar";
 import { SectionHeader } from "../../src/components/ui/SectionHeader";
 import { StoreCard } from "../../src/components/ui/StoreCard";
 import { useResponsive } from "../../src/hooks/useResponsive";
+import { useGroceryListStore } from "../../src/stores/groceryListStore";
 import { useTheme } from "../../src/theme/useTheme";
 
 export default function DashboardScreen() {
   const t = useTheme();
   const { isLg, isSm } = useResponsive();
   const columns = isLg ? 2 : 1;
+  const lists = useGroceryListStore((s) => s.lists);
+  const activeLists = lists.slice(0, 3);
 
   return (
     <DashboardShell title="Dashboard">
@@ -62,20 +66,75 @@ export default function DashboardScreen() {
         </Card>
 
         <Card style={{ flex: 1 }}>
-          <SectionHeader title="Filters" subtitle="Narrow results fast" />
-          <View style={{ height: t.spacing(2) }} />
-          <FilterChips
-            value="deals"
-            options={[
-              { key: "deals", label: "Deals" },
-              { key: "fresh", label: "Fresh" },
-              { key: "nearby", label: "Nearby" },
-              { key: "top", label: "Top rated" },
-            ]}
-            onChange={() => {}}
+          <SectionHeader
+            title="Compare now"
+            subtitle="Jump into a list and prepare for comparison"
+            right={
+              <Link href="/(app)/lists" asChild>
+                <Pressable
+                  style={{
+                    backgroundColor: t.colors.surface2,
+                    borderColor: t.colors.border,
+                    borderWidth: 1,
+                    borderRadius: t.radii.lg,
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                  }}
+                >
+                  <Text style={{ color: t.colors.text, fontWeight: "900" }}>My Lists</Text>
+                </Pressable>
+              </Link>
+            }
           />
-          <View style={{ height: t.spacing(3) }} />
-          <EmptyState title="No filters applied" subtitle="Select a chip to filter items." />
+          <View style={{ height: t.spacing(2) }} />
+          {activeLists.length === 0 ? (
+            <EmptyState
+              title="No active lists"
+              subtitle="Create a grocery list to start comparing prices."
+              action={
+                <Link href="/(app)/lists/create" asChild>
+                  <Pressable
+                    style={{
+                      backgroundColor: t.colors.primary,
+                      borderRadius: t.radii.lg,
+                      paddingVertical: 10,
+                      paddingHorizontal: 14,
+                    }}
+                  >
+                    <Text style={{ color: t.colors.primaryText, fontWeight: "900" }}>Create List</Text>
+                  </Pressable>
+                </Link>
+              }
+            />
+          ) : (
+            <View style={{ gap: 10 }}>
+              {activeLists.map((l) => (
+                <Link key={l.id} href={`/(app)/lists/${l.id}`} asChild>
+                  <Pressable>
+                    <View
+                      style={{
+                        borderWidth: 1,
+                        borderColor: t.colors.border,
+                        borderRadius: t.radii.lg,
+                        padding: 12,
+                        backgroundColor: t.colors.surface,
+                      }}
+                    >
+                      <Text style={{ color: t.colors.text, fontWeight: "900" }}>{l.name}</Text>
+                      <Text style={{ color: t.colors.textMuted, marginTop: 4, fontSize: t.typography.size.xs }}>
+                        {l.items.length} items • Updated {new Date(l.updatedAt).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </Link>
+              ))}
+              <Link href="/(app)/lists" asChild>
+                <Pressable style={{ alignSelf: "flex-start", paddingVertical: 6 }}>
+                  <Text style={{ color: t.colors.primary, fontWeight: "900" }}>View all lists →</Text>
+                </Pressable>
+              </Link>
+            </View>
+          )}
         </Card>
       </View>
 
@@ -113,7 +172,7 @@ export default function DashboardScreen() {
         </View>
 
         <View style={{ flex: 1, width: "100%" }}>
-          <SectionHeader title="Stores" subtitle="Fast delivery near you" />
+          <SectionHeader title="Tracked stores" subtitle="Placeholder (connect store tracking next)" />
           <View style={{ height: t.spacing(2) }} />
           <View style={{ gap: t.spacing(2) }}>
             <StoreCard name="FreshMart" etaText="25–35 min" subtitle="Open until 10pm" />
@@ -122,6 +181,14 @@ export default function DashboardScreen() {
           </View>
         </View>
       </View>
+
+      <View style={{ height: t.spacing(4) }} />
+
+      <Card>
+        <SectionHeader title="Recent alerts" subtitle="Placeholder (price drops, stock, favorites)" />
+        <View style={{ height: t.spacing(2) }} />
+        <EmptyState title="No alerts yet" subtitle="Alerts will show here once store tracking is enabled." />
+      </Card>
     </DashboardShell>
   );
 }
